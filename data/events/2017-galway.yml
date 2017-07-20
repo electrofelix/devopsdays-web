@@ -61,6 +61,7 @@ team_members: # Name is the only required field for team members.
     employer: "Cisco"
   - name: "Remo H. Jansen"
     employer: "Stellwagen Technology"
+    twitter: "remohjansen"
   - name: "Xabier Pedrera"
     employer: "HPE"
   - name: "David Renton"
