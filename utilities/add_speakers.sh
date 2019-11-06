@@ -17,6 +17,33 @@ SEDCMD(){
   fi
 }
 
+# based on https://unix.stackexchange.com/a/339725/166306
+READ_MULTI_LINE(){
+  prompt="$1"
+  variable="$2"
+  echo -n "${prompt} (CTRL+D for none):"
+  paragraph=
+  got_eot=0
+  while true
+  do
+    line=
+    while IFS= read -r -N 1 ch; do
+      case "$ch" in
+        $'\04') got_eot=1   ;&
+        $'\n')  break       ;;
+        *)      line="$line$ch" ;;
+      esac
+    done
+    paragraph="${paragraph}${paragraph:+\\\n}${line@Q}"
+
+    if (( got_eot )); then
+        break
+    fi
+  done
+  echo
+  eval $variable="${paragraph}"
+}
+
 # Get year
 default_year=$(date +"%Y")
 if [[ ! -z $DOD_YEAR ]] ; then
@@ -78,9 +105,9 @@ twitter=$(echo $twitter | sed 's/@//')
 SEDCMD "s/SPEAKERTWITTER/$twitter/" $speakerfile
 
 # bio
-read -p "Enter speaker bio (return for none): " bio
+READ_MULTI_LINE "Enter speaker bio" bio
 [ -z "${bio}" ] && bio=''
-SEDCMD "s/SPEAKERBIO/$bio/" $speakerfile
+SEDCMD "s|SPEAKERBIO|$bio|" $speakerfile
 
 ####################
 # Populate talk file
@@ -96,9 +123,9 @@ read -p "Enter speaker talk title (return for none): " title
 SEDCMD "s/TALKTITLE/$title/" $talkfile
 
 # talk description
-read -p "Enter speaker talk description (return for none): " abstract
+READ_MULTI_LINE "Enter speaker talk description" abstract
 [ -z "${abstract}" ] && abstract=''
-SEDCMD "s/ABSTRACT/$abstract/" $talkfile
+SEDCMD "s|ABSTRACT|$abstract|" $talkfile
 
 #######################
 # Set speaker image
